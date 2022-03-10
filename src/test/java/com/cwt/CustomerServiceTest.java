@@ -2,6 +2,7 @@ package com.cwt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.cwt.entities.Customer;
 import com.cwt.exceptions.RecordNotFoundException;
+import com.cwt.payload.CustomerPayload;
 import com.cwt.persistence.CustomerRepository;
 import com.cwt.service.CustomerService;
 import com.cwt.service.CustomerServiceImpl;
@@ -215,14 +217,55 @@ public class CustomerServiceTest {
 			newCustomer.setLastName("Mockito1Update");
 			newCustomer.setLocation("Location Test1Update");
 
-			mockCustomer1.setEmail("test_updated@email.com");
-			mockCustomer1.setFirstName("Test1Update");
-			mockCustomer1.setLastName("Mockito1Update");
-			mockCustomer1.setLocation("Location Test1Update");
+			Customer expectedCustomer = new Customer();
+			expectedCustomer.setId(1);
+			expectedCustomer.setEmail("test_updated@email.com");
+			expectedCustomer.setFirstName("Test1Update");
+			expectedCustomer.setLastName("Mockito1Update");
+			expectedCustomer.setLocation("Location Test1Update");
 
-			when(customerRepository.save(newCustomer)).thenReturn(mockCustomer1);
+			when(customerRepository.findById(1)).thenReturn(Optional.of(mockCustomer1));
+			when(customerRepository.save(newCustomer)).thenReturn(expectedCustomer);
 
 			Customer actualCustomer = customerService.update(1, newCustomer);
+
+			assertEquals(1, actualCustomer.getId());
+			assertEquals("test_updated@email.com", actualCustomer.getEmail());
+			assertEquals("Test1Update", actualCustomer.getFirstName());
+			assertEquals("Mockito1Update", actualCustomer.getLastName());
+			assertEquals("Location Test1Update", actualCustomer.getLocation());
+
+		}
+	}
+
+	@Nested
+	@DisplayName("Patch")
+	class Patch {
+		@Test
+		@DisplayName("Patch customer")
+		public void testPatch() {
+
+			CustomerPayload newCustomer = new CustomerPayload();
+			newCustomer.setEmail("test_updated@email.com");
+			newCustomer.setFirstName("Test1Update");
+
+			Customer expectedCustomer = new Customer();
+			expectedCustomer.setId(1);
+			expectedCustomer.setEmail("test_updated@email.com");
+			expectedCustomer.setFirstName("Test1Update");
+			expectedCustomer.setLastName("Mockito1");
+			expectedCustomer.setLocation("Location Test1");
+
+			when(customerRepository.findById(1)).thenReturn(Optional.of(mockCustomer1));
+			when(customerRepository.save(any(Customer.class))).thenReturn(expectedCustomer);
+
+			Customer actualCustomer = customerService.patch(1, newCustomer);
+
+			assertEquals(1, actualCustomer.getId());
+			assertEquals("test_updated@email.com", actualCustomer.getEmail());
+			assertEquals("Test1Update", actualCustomer.getFirstName());
+			assertEquals("Mockito1", actualCustomer.getLastName());
+			assertEquals("Location Test1", actualCustomer.getLocation());
 
 		}
 	}

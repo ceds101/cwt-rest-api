@@ -31,21 +31,18 @@ public class CustomerController {
 	@Autowired
 	private CustomerService customerService;
 
-	// Done
 	@GetMapping("/{custId}")
 	public ResponseEntity<Customer> getCustomer(@PathVariable Integer custId) {
 		Customer customer = customerService.findById(custId);
 		return ResponseEntity.ok(customer);
 	}
 
-	// Done
 	@GetMapping("/email/{email}")
 	public ResponseEntity<Customer> getCustomerByEmail(@PathVariable String email) {
 		Customer customer = customerService.findByEmail(email);
 		return ResponseEntity.ok(customer);
 	}
 
-	// Done
 	@GetMapping("/all")
 	public ResponseEntity<List<Customer>> getCustomers() {
 		List<Customer> customers = customerService.findAll();

@@ -1,14 +1,11 @@
 package com.cwt;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -16,26 +13,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import com.cwt.controllers.CustomerController;
 import com.cwt.entities.Customer;
-import com.cwt.exceptions.RecordNotFoundException;
-import com.cwt.service.CustomerService;
+import com.cwt.service.CustomerServiceImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-@SpringBootTest
+@WebMvcTest(CustomerController.class)
 public class CustomerControllerTest {
 
-	@Mock
-	CustomerService customerService;
+	@Autowired
+	private MockMvc mockMvc;
 
-	@InjectMocks
-	CustomerController customerController = new CustomerController();
+	@MockBean
+	private CustomerServiceImpl customerService;
+
+	private ObjectMapper mapper = new ObjectMapper();
 
 	private Map<Integer, Customer> mockCustomers;
 
@@ -75,34 +74,20 @@ public class CustomerControllerTest {
 	class GetById {
 		@Test
 		@DisplayName("Get by Id Existing Customer")
-		public void testGetCustomerById_ExistingCustomer() {
+		public void testGetCustomerById_ExistingCustomer() throws JsonProcessingException, Exception {
 
-			Mockito.when(customerService.findById(1)).thenReturn(mockCustomer1);
+			when(customerService.findById(1)).thenReturn(mockCustomer1);
 
-			ResponseEntity<Customer> actualResponse = customerController.getCustomer(1);
+			MvcResult result = mockMvc.perform(get("/customers/{custId}", 1).contentType("application/json")
+					.content(mapper.writeValueAsString(mockCustomer1))).andExpect(status().isOk()).andReturn();
 
-			Customer actualCustomer = actualResponse.getBody();
-
-			assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-			assertEquals("test1@email.com", actualCustomer.getEmail());
-			assertEquals("Test1", actualCustomer.getFirstName());
-			assertEquals("Mockito1", actualCustomer.getLastName());
-			assertEquals("Location Test1", actualCustomer.getLocation());
+			System.out.println(result.getResponse().getContentAsString());
 
 		}
 
 		@Test
 		@DisplayName("Get by Id Non-Existing Customer")
 		public void testGetCustomerById_NonExistingCustomer() {
-
-			RecordNotFoundException mockException = new RecordNotFoundException("Customer 2 Not Found");
-
-			Mockito.when(customerService.findById(2)).thenThrow(mockException);
-
-			RecordNotFoundException actualException = assertThrows(RecordNotFoundException.class,
-					() -> customerController.getCustomer(2));
-
-			assertEquals("Customer 2 Not Found", actualException.getMessage());
 
 		}
 	}
@@ -114,33 +99,13 @@ public class CustomerControllerTest {
 		@DisplayName("Get by Email Existing Customer")
 		public void testGetCustomerByEmail_ExistingCustomer() {
 
-			Mockito.when(customerService.findByEmail("test1@email.com")).thenReturn(mockCustomer1);
-
-			ResponseEntity<Customer> actualResponse = customerController.getCustomerByEmail("test1@email.com");
-
-			Customer actualCustomer = actualResponse.getBody();
-
-			assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-			assertEquals("test1@email.com", actualCustomer.getEmail());
-			assertEquals("Test1", actualCustomer.getFirstName());
-			assertEquals("Mockito1", actualCustomer.getLastName());
-			assertEquals("Location Test1", actualCustomer.getLocation());
+			when(customerService.findByEmail("test1@email.com")).thenReturn(mockCustomer1);
 
 		}
 
 		@Test
 		@DisplayName("Get by Email Non-Existing Customer")
 		public void testGetCustomerByEmail_NonExistingCustomer() {
-
-			RecordNotFoundException mockException = new RecordNotFoundException(
-					"Customer with email test_nonexisting@email.com Not Found");
-
-			Mockito.when(customerService.findByEmail("test_nonexisting@email.com")).thenThrow(mockException);
-
-			RecordNotFoundException actualException = assertThrows(RecordNotFoundException.class,
-					() -> customerController.getCustomerByEmail("test_nonexisting@email.com"));
-
-			assertEquals("Customer with email test_nonexisting@email.com Not Found", actualException.getMessage());
 
 		}
 	}
@@ -153,28 +118,12 @@ public class CustomerControllerTest {
 		@DisplayName("Get All With Customers")
 		public void testGetCustomers_WithCustomers() {
 
-			Mockito.when(customerService.findAll()).thenReturn(new ArrayList<Customer>(mockCustomers.values()));
-
-			ResponseEntity<List<Customer>> actualResponse = customerController.getCustomers();
-
-			List<Customer> actualCustomers = actualResponse.getBody();
-
-			assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-			assertEquals(2, actualCustomers.size());
+			when(customerService.findAll()).thenReturn(new ArrayList<Customer>(mockCustomers.values()));
 		}
 
 		@Test
 		@DisplayName("Get All No Customers")
 		public void testGetCustomers_NoCustomers() {
-
-			Mockito.when(customerService.findAll()).thenReturn(Collections.emptyList());
-
-			ResponseEntity<List<Customer>> actualResponse = customerController.getCustomers();
-
-			List<Customer> actualCustomers = actualResponse.getBody();
-
-			assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-			assertEquals(0, actualCustomers.size());
 
 		}
 
@@ -188,28 +137,11 @@ public class CustomerControllerTest {
 		@DisplayName("Delete Existing Customer")
 		public void testGetCustomers_WithCustomers() {
 
-			ResponseEntity<Map<String, Object>> actualResponse = customerController.delete(1);
-			Map<String, Object> actualBody = actualResponse.getBody();
-
-			assertEquals(HttpStatus.OK, actualResponse.getStatusCode());
-			assertTrue((Boolean) actualBody.get("success"));
-
-			verify(customerService).delete(1);
-
 		}
 
 		@Test
 		@DisplayName("Delete Non-Existing Customer")
 		public void testGetCustomers_NoCustomers() {
-
-			RecordNotFoundException mockException = new RecordNotFoundException("Customer 1 Not Found");
-
-			Mockito.doThrow(mockException).when(customerService).delete(1);
-
-			RecordNotFoundException actualException = assertThrows(RecordNotFoundException.class,
-					() -> customerController.delete(1));
-
-			assertEquals("Customer 1 Not Found", actualException.getMessage());
 
 		}
 
