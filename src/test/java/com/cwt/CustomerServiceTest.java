@@ -89,6 +89,7 @@ public class CustomerServiceTest {
 			assertEquals("Mockito1", actualCustomer.getLastName());
 			assertEquals("Location Test1", actualCustomer.getLocation());
 
+			// PR test
 		}
 
 		@Test
