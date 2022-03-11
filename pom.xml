@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.cwt</groupId>
 	<artifactId>cwt-rest-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>cwt-rest-api</name>
 	<description>REST API demonstration</description>
 	<properties>
