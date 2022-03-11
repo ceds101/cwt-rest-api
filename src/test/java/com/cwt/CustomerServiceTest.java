@@ -85,7 +85,7 @@ public class CustomerServiceTest {
 			Customer actualCustomer = customerService.findById(1);
 
 			assertEquals("test1@email.com", actualCustomer.getEmail());
-			assertEquals("Test2", actualCustomer.getFirstName());
+			assertEquals("Test1", actualCustomer.getFirstName());
 			assertEquals("Mockito1", actualCustomer.getLastName());
 			assertEquals("Location Test1", actualCustomer.getLocation());
 
