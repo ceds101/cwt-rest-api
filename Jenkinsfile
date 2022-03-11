@@ -16,8 +16,22 @@ pipeline {
         stage('Test') {
             steps {
                 bat 'mvn test'
+                withSonarQubeEnv('My SonarQube Server', envOnly: true) {
+				  // This expands the evironment variables SONAR_CONFIG_NAME, SONAR_HOST_URL, SONAR_AUTH_TOKEN that can be used by any script.
+				  bat 'mvn sonar:sonar'
+				}
             }
         }
+        
+        stage('Code Quality') {
+            steps {
+                withSonarQubeEnv('My SonarQube Server') {
+				  bat 'mvn sonar:sonar'
+				}
+            }
+        }
+        
+        
         
         stage('Package') {
             steps {
