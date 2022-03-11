@@ -38,7 +38,7 @@ public class CustomerRepositoryTest {
 		assertEquals("Mockito", actualCustomer.getLastName());
 		assertEquals("Location Test", actualCustomer.getLocation());
 
-		// Testttttt
+		// Testttttt 2
 	}
 
 	@Test
