@@ -61,7 +61,6 @@ public class CustomerController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(updatedCustomer);
 	}
 
-	// Done
 	@DeleteMapping("/{custId}")
 	public ResponseEntity<Map<String, Object>> delete(@PathVariable Integer custId) {
 		customerService.delete(custId);

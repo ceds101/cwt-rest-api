@@ -23,15 +23,6 @@ pipeline {
             }
         }
         
-        stage('Code Quality') {
-            steps {
-                withSonarQubeEnv('My SonarQube Server') {
-				  bat 'mvn sonar:sonar'
-				}
-            }
-        }
-        
-        
         
         stage('Package') {
             steps {
